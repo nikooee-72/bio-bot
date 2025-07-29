@@ -1,7 +1,7 @@
 import logging
 import os
 import aiofiles
-from io import BytesIO
+import asyncio
 from pydub import AudioSegment
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
@@ -59,16 +59,31 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ogg_path = f"voice_{voice.file_id}.ogg"
     wav_path = f"voice_{voice.file_id}.wav"
 
+    # دانلود فایل بصورت async
     await file.download_to_drive(ogg_path)
-    sound = AudioSegment.from_ogg(ogg_path)
-    sound.export(wav_path, format="wav")
 
-    # تبدیل فایل صوتی به متن با OpenAI Whisper از طریق API
-    with open(wav_path, "rb") as audio_file:
-        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+    # تبدیل از ogg به wav در thread جداگانه (sync)
+    def convert_ogg_to_wav():
+        sound = AudioSegment.from_ogg(ogg_path)
+        sound.export(wav_path, format="wav")
 
-    os.remove(ogg_path)
-    os.remove(wav_path)
+    await asyncio.to_thread(convert_ogg_to_wav)
+
+    # تبدیل صوت به متن با Whisper (sync) در thread جداگانه
+    def transcribe_audio():
+        with open(wav_path, "rb") as audio_file:
+            transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        return transcript
+
+    transcript = await asyncio.to_thread(transcribe_audio)
+
+    # حذف فایل‌ها
+    try:
+        os.remove(ogg_path)
+        os.remove(wav_path)
+    except Exception as e:
+        logger.warning(f"خطا در حذف فایل‌ها: {e}")
+
     await update.message.reply_text(f"متن ویس شما:\n{transcript['text']}")
 
 # --- فایل متنی ---
