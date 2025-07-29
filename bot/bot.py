@@ -9,8 +9,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 import openai
 
 # دریافت توکن‌ها از متغیرهای محیطی (محیط Railway)
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+TELEGRAM_TOKEN = os.getenv("8204535470:AAFQ7ffXUy2jDyj79phxDq4RwdwPeweWrJg")
+OPENROUTER_API_KEY = os.getenv("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")
 
 openai.api_key = OPENROUTER_API_KEY
 
