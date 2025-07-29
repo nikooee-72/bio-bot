@@ -1,5 +1,5 @@
 python-telegram-bot==20.3
-openai
-httpx
 aiofiles
+openai
 pydub
+nest_asyncio
