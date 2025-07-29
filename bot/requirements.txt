@@ -3,6 +3,3 @@ openai
 httpx
 aiofiles
 pydub
-Pillow
-faster-whisper
-git+https://github.com/openai/whisper.git
