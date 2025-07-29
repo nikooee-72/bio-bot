@@ -1,29 +1,31 @@
+import os
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from dotenv import load_dotenv
 
-# ❗ توکن ربات — فقط برای تست، بعداً از ENV بخون
-TOKEN = "8204535470:AAFQ7ffXUy2jDyj79phxDq4RwdwPeweWrJg"
+load_dotenv()  # بارگذاری فایل .env
 
+# گرفتن اطلاعات از .env
+TOKEN = os.getenv("8204535470:AAFQ7ffXUy2jDyj79phxDq4RwdwPeweWrJg")
+WEBHOOK_URL = os.getenv("https://bio-bot-production.up.railway.app")
+
+# دستور شروع
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("سلام! من ربات زیست‌شناسی هستم. سوالی داری بپرس :)")
+    await update.message.reply_text("سلام! ربات Webhook با موفقیت راه‌اندازی شد.")
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("دستور /start رو بزن یا سوالی درباره زیست بپرس.")
-
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_message = update.message.text
-    # اینجا پاسخ ساده می‌ده، بعداً می‌تونی به هوش مصنوعی وصلش کنی
-    await update.message.reply_text(f"تو گفتی: {user_message}\nدر حال پردازش...")
-
+# تابع اصلی
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
+    # هندلرها
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("🤖 ربات در حال اجراست...")
-    app.run_polling()
+    # راه‌اندازی Webhook
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),  # Railway از PORT استفاده می‌کنه
+        webhook_url=WEBHOOK_URL
+    )
 
 if __name__ == "__main__":
     main()
